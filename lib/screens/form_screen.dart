@@ -182,9 +182,23 @@ class _FormScreenState extends State<FormScreen> {
                 ? AppConstants.updateSuccess
                 : AppConstants.addSuccess),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
           ),
         );
-        Navigator.pop(context);
+
+        // Clear form for add mode
+        if (!isEditMode) {
+          _titleController.clear();
+          _latController.clear();
+          _lonController.clear();
+          setState(() {
+            _selectedImage = null;
+          });
+          _getCurrentLocation(); // Reset to current location
+        } else {
+          // For edit mode, pop back
+          Navigator.pop(context, true); // Pass true to indicate success
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

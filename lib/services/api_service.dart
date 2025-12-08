@@ -1,22 +1,29 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 import '../models/landmark_model.dart';
 import '../utils/constants.dart';
 
 class ApiService {
-  final Dio _dio = Dio();
+  Dio _getDio() {
+    final dio = Dio();
+    dio.options.baseUrl = AppConstants.baseUrl;
+    dio.options.connectTimeout = const Duration(seconds: 30);
+    dio.options.receiveTimeout = const Duration(seconds: 30);
 
-  ApiService() {
-    _dio.options.baseUrl = AppConstants.baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    // Add logging interceptor
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+    ));
+
+    return dio;
   }
 
   /// Fetch all landmarks
   Future<List<Landmark>> fetchLandmarks() async {
     try {
-      final response = await _dio.get('');
+      final dio = _getDio();
+      final response = await dio.get('');
 
       if (response.statusCode == 200) {
         if (response.data is List) {
@@ -41,41 +48,53 @@ class ApiService {
     File? imageFile,
   }) async {
     try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(AppConstants.baseUrl),
-      );
+      final dio = _getDio();
 
-      // Add fields
-      request.fields['title'] = title;
-      request.fields['lat'] = lat.toString();
-      request.fields['lon'] = lon.toString();
+      Map<String, dynamic> formDataMap = {
+        'title': title,
+        'lat': lat.toString(),
+        'lon': lon.toString(),
+      };
 
       // Add image if provided
       if (imageFile != null) {
-        var stream = http.ByteStream(imageFile.openRead());
-        var length = await imageFile.length();
-        var multipartFile = http.MultipartFile(
-          'image',
-          stream,
-          length,
-          filename: 'landmark_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        // Create a fresh copy of the file bytes
+        final bytes = await imageFile.readAsBytes();
+        String fileName = 'landmark_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        formDataMap['image'] = MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
         );
-        request.files.add(multipartFile);
       }
 
-      // Send request
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
+      FormData formData = FormData.fromMap(formDataMap);
+
+      final response = await dio.post(
+        '',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Landmark created successfully: ${response.data}');
         return true;
       } else {
         print('Failed to create landmark: ${response.statusCode}');
+        print('Response: ${response.data}');
         return false;
       }
     } catch (e) {
       print('Error creating landmark: $e');
+      if (e is DioException) {
+        print('DioError type: ${e.type}');
+        print('DioError message: ${e.message}');
+        print('DioError response: ${e.response?.data}');
+      }
       return false;
     }
   }
@@ -89,52 +108,67 @@ class ApiService {
     File? imageFile,
   }) async {
     try {
+      final dio = _getDio();
+
       if (imageFile != null) {
-        // If image is provided, use multipart
-        var request = http.MultipartRequest(
-          'POST', // Some servers use POST for file uploads
-          Uri.parse(AppConstants.baseUrl),
+        // With image - use FormData with fresh bytes
+        Map<String, dynamic> formDataMap = {
+          'id': id.toString(),
+          'title': title,
+          'lat': lat.toString(),
+          'lon': lon.toString(),
+        };
+
+        // Create a fresh copy of the file bytes
+        final bytes = await imageFile.readAsBytes();
+        String fileName = 'landmark_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        formDataMap['image'] = MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
         );
 
-        request.fields['id'] = id.toString();
-        request.fields['title'] = title;
-        request.fields['lat'] = lat.toString();
-        request.fields['lon'] = lon.toString();
-        request.fields['_method'] = 'PUT'; // Method override
+        FormData formData = FormData.fromMap(formDataMap);
 
-        var stream = http.ByteStream(imageFile.openRead());
-        var length = await imageFile.length();
-        var multipartFile = http.MultipartFile(
-          'image',
-          stream,
-          length,
-          filename: 'landmark_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        final response = await dio.put(
+          '',
+          data: formData,
+          options: Options(
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          ),
         );
-        request.files.add(multipartFile);
 
-        var streamedResponse = await request.send();
-        var response = await http.Response.fromStream(streamedResponse);
+        print('Update response status: ${response.statusCode}');
+        print('Update response data: ${response.data}');
 
         return response.statusCode == 200;
       } else {
-        // Without image, use form-encoded PUT
-        final response = await _dio.put(
+        // Without image - use form-urlencoded
+        final response = await dio.put(
           '',
           data: {
-            'id': id,
+            'id': id.toString(),
             'title': title,
-            'lat': lat,
-            'lon': lon,
+            'lat': lat.toString(),
+            'lon': lon.toString(),
           },
           options: Options(
             contentType: Headers.formUrlEncodedContentType,
           ),
         );
 
+        print('Update response status: ${response.statusCode}');
+        print('Update response data: ${response.data}');
+
         return response.statusCode == 200;
       }
     } catch (e) {
       print('Error updating landmark: $e');
+      if (e is DioException) {
+        print('DioError response: ${e.response?.data}');
+      }
       return false;
     }
   }
@@ -142,17 +176,24 @@ class ApiService {
   /// Delete a landmark
   Future<bool> deleteLandmark(int id) async {
     try {
-      final response = await _dio.delete(
+      final dio = _getDio();
+
+      final response = await dio.delete(
         '',
-        data: {'id': id},
-        options: Options(
-          contentType: Headers.formUrlEncodedContentType,
-        ),
+        queryParameters: {
+          'id': id.toString(),
+        },
       );
+
+      print('Delete response status: ${response.statusCode}');
+      print('Delete response data: ${response.data}');
 
       return response.statusCode == 200;
     } catch (e) {
       print('Error deleting landmark: $e');
+      if (e is DioException) {
+        print('DioError response: ${e.response?.data}');
+      }
       return false;
     }
   }
