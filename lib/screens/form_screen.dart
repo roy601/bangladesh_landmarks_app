@@ -361,16 +361,26 @@ class _FormScreenState extends State<FormScreen> {
                     const SizedBox(height: 24),
 
                     // Submit button
-                    ElevatedButton(
-                      onPressed: provider.isLoading ? null : _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(
-                        isEditMode ? 'Update Landmark' : 'Add Landmark',
-                        style: const TextStyle(fontSize: 16),
-                      ),
+// Submit button (around line 250)
+                ElevatedButton(
+                  onPressed: provider.isLoading ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: provider.isLoading
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
+                  )
+                      : Text(
+                    isEditMode ? 'Update Landmark' : 'Add Landmark',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
                   ],
                 ),
               ),

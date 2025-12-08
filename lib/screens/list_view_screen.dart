@@ -219,16 +219,21 @@ class _ListViewScreenState extends State<ListViewScreen> {
                         ),
                       );
                     },
-                    onEdit: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FormScreen(
-                            landmark: landmark,
+                      onEdit: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FormScreen(
+                              landmark: landmark,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+
+                        // Refresh if edit was successful
+                        if (result == true && mounted) {
+                          context.read<LandmarkProvider>().fetchLandmarks();
+                        }
+                      },
                     onDelete: () {
                       if (landmark.id != null) {
                         _confirmDelete(
