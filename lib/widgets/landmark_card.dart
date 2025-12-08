@@ -37,35 +37,35 @@ class LandmarkCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: landmark.fullImageUrl != null
                     ? CachedNetworkImage(
-                  imageUrl: landmark.fullImageUrl!,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image_not_supported),
-                  ),
-                )
+                        imageUrl: landmark.fullImageUrl!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 80,
+                          height: 80,
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 80,
+                          height: 80,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported),
+                        ),
+                      )
                     : Container(
-                  width: 80,
-                  height: 80,
-                  color: Colors.grey[300],
-                  child: const Icon(
-                    Icons.location_on,
-                    size: 40,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons.location_on,
+                          size: 40,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
               ),
               const SizedBox(width: 12),
 

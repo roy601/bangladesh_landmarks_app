@@ -215,151 +215,152 @@ class _FormScreenState extends State<FormScreen> {
       body: provider.isLoading
           ? const LoadingIndicator(message: 'Saving...')
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Image section
-              GestureDetector(
-                onTap: _showImageSourceDialog,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[400]!),
-                  ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.cover,
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Image section
+                    GestureDetector(
+                      onTap: _showImageSourceDialog,
+                      child: Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[400]!),
+                        ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : (isEditMode &&
+                                    widget.landmark!.fullImageUrl != null)
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      widget.landmark!.fullImageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stack) =>
+                                          _buildImagePlaceholder(),
+                                    ),
+                                  )
+                                : _buildImagePlaceholder(),
+                      ),
                     ),
-                  )
-                      : (isEditMode && widget.landmark!.fullImageUrl != null)
-                      ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      widget.landmark!.fullImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stack) =>
-                          _buildImagePlaceholder(),
+
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap to ${_selectedImage != null || (isEditMode && widget.landmark!.image != null) ? 'change' : 'add'} image',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
                     ),
-                  )
-                      : _buildImagePlaceholder(),
+
+                    const SizedBox(height: 24),
+
+                    // Title field
+                    CustomTextField(
+                      controller: _titleController,
+                      label: 'Title',
+                      hint: 'Enter landmark title',
+                      prefixIcon: Icons.title,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter a title';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Latitude field
+                    CustomTextField(
+                      controller: _latController,
+                      label: 'Latitude',
+                      hint: 'Enter latitude',
+                      prefixIcon: Icons.location_on,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^-?\d*\.?\d*'),
+                        ),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter latitude';
+                        }
+                        final lat = double.tryParse(value.trim());
+                        if (lat == null) {
+                          return 'Invalid latitude';
+                        }
+                        if (lat < -90 || lat > 90) {
+                          return 'Latitude must be between -90 and 90';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Longitude field
+                    CustomTextField(
+                      controller: _lonController,
+                      label: 'Longitude',
+                      hint: 'Enter longitude',
+                      prefixIcon: Icons.location_on,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^-?\d*\.?\d*'),
+                        ),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter longitude';
+                        }
+                        final lon = double.tryParse(value.trim());
+                        if (lon == null) {
+                          return 'Invalid longitude';
+                        }
+                        if (lon < -180 || lon > 180) {
+                          return 'Longitude must be between -180 and 180';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Submit button
+                    ElevatedButton(
+                      onPressed: provider.isLoading ? null : _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        isEditMode ? 'Update Landmark' : 'Add Landmark',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 8),
-              Text(
-                'Tap to ${_selectedImage != null || (isEditMode && widget.landmark!.image != null) ? 'change' : 'add'} image',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Title field
-              CustomTextField(
-                controller: _titleController,
-                label: 'Title',
-                hint: 'Enter landmark title',
-                prefixIcon: Icons.title,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a title';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Latitude field
-              CustomTextField(
-                controller: _latController,
-                label: 'Latitude',
-                hint: 'Enter latitude',
-                prefixIcon: Icons.location_on,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'^-?\d*\.?\d*'),
-                  ),
-                ],
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter latitude';
-                  }
-                  final lat = double.tryParse(value.trim());
-                  if (lat == null) {
-                    return 'Invalid latitude';
-                  }
-                  if (lat < -90 || lat > 90) {
-                    return 'Latitude must be between -90 and 90';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Longitude field
-              CustomTextField(
-                controller: _lonController,
-                label: 'Longitude',
-                hint: 'Enter longitude',
-                prefixIcon: Icons.location_on,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'^-?\d*\.?\d*'),
-                  ),
-                ],
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter longitude';
-                  }
-                  final lon = double.tryParse(value.trim());
-                  if (lon == null) {
-                    return 'Invalid longitude';
-                  }
-                  if (lon < -180 || lon > 180) {
-                    return 'Longitude must be between -180 and 180';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              // Submit button
-              ElevatedButton(
-                onPressed: provider.isLoading ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  isEditMode ? 'Update Landmark' : 'Add Landmark',
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

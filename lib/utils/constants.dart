@@ -18,7 +18,8 @@ class AppConstants {
   static const double padding = 16.0;
 
   // Error Messages
-  static const String networkError = 'Network error. Please check your connection.';
+  static const String networkError =
+      'Network error. Please check your connection.';
   static const String serverError = 'Server error. Please try again later.';
   static const String noLocationPermission = 'Location permission denied';
   static const String noCameraPermission = 'Camera permission denied';

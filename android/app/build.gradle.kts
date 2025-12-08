@@ -6,34 +6,31 @@ plugins {
 }
 
 android {
-    compileSdkVersion 34
     namespace = "com.example.bangladesh_landmarks_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = '1.8'
     }
 
     defaultConfig {
-        applicationId "com.example.bangladesh_landmarks_app"
-        minSdkVersion 21      // Update this line (was probably 19)
-        targetSdkVersion 34   // Update this line
-        versionCode 1
-        versionName "1.0"
-        multiDexEnabled true  // Add this line
+        applicationId = "com.example.bangladesh_landmarks_app"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = 1
+        versionName = "1.0"
+        multiDexEnabled = true
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.debug
         }
     }
 }

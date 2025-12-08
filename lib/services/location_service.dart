@@ -63,17 +63,17 @@ class LocationService {
 
   /// Calculate distance between two coordinates (in kilometers)
   static double calculateDistance(
-      double startLat,
-      double startLon,
-      double endLat,
-      double endLon,
-      ) {
+    double startLat,
+    double startLon,
+    double endLat,
+    double endLon,
+  ) {
     return Geolocator.distanceBetween(
-      startLat,
-      startLon,
-      endLat,
-      endLon,
-    ) /
+          startLat,
+          startLon,
+          endLat,
+          endLon,
+        ) /
         1000; // Convert to kilometers
   }
 }

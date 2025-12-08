@@ -16,11 +16,11 @@ class LandmarkBottomSheet extends StatelessWidget {
   }) : super(key: key);
 
   static void show(
-      BuildContext context, {
-        required Landmark landmark,
-        required VoidCallback onEdit,
-        required VoidCallback onDelete,
-      }) {
+    BuildContext context, {
+    required Landmark landmark,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

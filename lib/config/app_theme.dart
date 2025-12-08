@@ -16,7 +16,6 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: backgroundColor,
-
     colorScheme: const ColorScheme.light(
       primary: primaryColor,
       secondary: secondaryColor,
@@ -24,14 +23,12 @@ class AppTheme {
       background: backgroundColor,
       surface: cardColor,
     ),
-
     appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
     ),
-
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
       selectedItemColor: primaryColor,
@@ -39,15 +36,13 @@ class AppTheme {
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
-
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardColor,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
     ),
-
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: Colors.white,
@@ -69,7 +64,6 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
@@ -81,7 +75,6 @@ class AppTheme {
         elevation: 2,
       ),
     ),
-
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,

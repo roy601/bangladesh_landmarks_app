@@ -177,7 +177,7 @@ class LandmarkProvider with ChangeNotifier {
 
     return _landmarks
         .where((landmark) =>
-        landmark.title.toLowerCase().contains(query.toLowerCase()))
+            landmark.title.toLowerCase().contains(query.toLowerCase()))
         .toList();
   }
 
@@ -194,7 +194,7 @@ class LandmarkProvider with ChangeNotifier {
     }).toList();
 
     landmarksWithDistance.sort(
-          (a, b) => (a['distance'] as double).compareTo(b['distance'] as double),
+      (a, b) => (a['distance'] as double).compareTo(b['distance'] as double),
     );
 
     return landmarksWithDistance

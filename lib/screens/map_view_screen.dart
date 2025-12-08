@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../providers/landmark_provider.dart';
 import '../models/landmark_model.dart';
 import '../widgets/landmark_bottom_sheet.dart';
@@ -17,8 +18,7 @@ class MapViewScreen extends StatefulWidget {
 }
 
 class _MapViewScreenState extends State<MapViewScreen> {
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
+  final MapController _mapController = MapController();
   bool _isLoadingLocation = false;
 
   @override
@@ -29,44 +29,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _mapController?.dispose();
-    super.dispose();
-  }
-
   void _loadMarkers() {
-    final provider = context.read<LandmarkProvider>();
-    _updateMarkers(provider.landmarks);
-  }
-
-  void _updateMarkers(List<Landmark> landmarks) {
-    final markers = <Marker>{};
-
-    for (var landmark in landmarks) {
-      if (landmark.id != null) {
-        markers.add(
-          Marker(
-            markerId: MarkerId(landmark.id.toString()),
-            position: LatLng(landmark.lat, landmark.lon),
-            infoWindow: InfoWindow(
-              title: landmark.title.isEmpty ? 'Untitled' : landmark.title,
-              snippet: 'Tap for options',
-            ),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRed,
-            ),
-            onTap: () {
-              _showLandmarkBottomSheet(landmark);
-            },
-          ),
-        );
-      }
-    }
-
-    setState(() {
-      _markers = markers;
-    });
+    // Markers are built in the widget tree
   }
 
   void _showLandmarkBottomSheet(Landmark landmark) {
@@ -116,10 +80,6 @@ class _MapViewScreenState extends State<MapViewScreen> {
                       backgroundColor: success ? Colors.green : Colors.red,
                     ),
                   );
-
-                  if (success) {
-                    _loadMarkers();
-                  }
                 }
               }
             },
@@ -139,14 +99,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
     final provider = context.read<LandmarkProvider>();
     final location = await provider.getCurrentLocation();
 
-    if (location != null && _mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(location['lat']!, location['lon']!),
-            zoom: 14,
-          ),
-        ),
+    if (location != null) {
+      _mapController.move(
+        LatLng(location['lat']!, location['lon']!),
+        14,
       );
 
       if (mounted) {
@@ -171,16 +127,12 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   void _goToBangladesh() {
-    _mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        const CameraPosition(
-          target: LatLng(
-            AppConstants.bangladeshLat,
-            AppConstants.bangladeshLon,
-          ),
-          zoom: AppConstants.defaultZoom,
-        ),
+    _mapController.move(
+      const LatLng(
+        AppConstants.bangladeshLat,
+        AppConstants.bangladeshLon,
       ),
+      AppConstants.defaultZoom,
     );
   }
 
@@ -204,35 +156,46 @@ class _MapViewScreenState extends State<MapViewScreen> {
       ),
       body: Consumer<LandmarkProvider>(
         builder: (context, provider, child) {
-          // Update markers when landmarks change
-          if (_markers.length != provider.landmarks.length) {
-            _updateMarkers(provider.landmarks);
-          }
-
           if (provider.isLoading && provider.landmarks.isEmpty) {
             return const LoadingIndicator(message: 'Loading map...');
           }
 
           return Stack(
             children: [
-              GoogleMap(
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: const LatLng(
                     AppConstants.bangladeshLat,
                     AppConstants.bangladeshLon,
                   ),
-                  zoom: AppConstants.defaultZoom,
+                  initialZoom: AppConstants.defaultZoom,
+                  minZoom: 3,
+                  maxZoom: 18,
                 ),
-                markers: _markers,
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                },
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: true,
-                mapToolbarEnabled: false,
-                compassEnabled: true,
-                mapType: MapType.normal,
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.bangladesh_landmarks_app',
+                  ),
+                  MarkerLayer(
+                    markers: provider.landmarks.map((landmark) {
+                      return Marker(
+                        point: LatLng(landmark.lat, landmark.lon),
+                        width: 40,
+                        height: 40,
+                        child: GestureDetector(
+                          onTap: () => _showLandmarkBottomSheet(landmark),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
 
               // Offline indicator
