@@ -10,6 +10,8 @@ import '../widgets/loading_indicator.dart';
 import '../utils/constants.dart';
 import '../utils/image_helper.dart';
 import '../config/app_theme.dart';
+import 'map_picker_screen.dart';
+import 'package:latlong2/latlong.dart';
 
 class FormScreen extends StatefulWidget {
   final Landmark? landmark; // null for add, not-null for edit
@@ -358,6 +360,17 @@ class _FormScreenState extends State<FormScreen> {
                       },
                     ),
 
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: _pickLocationFromMap,
+                      icon: const Icon(Icons.map),
+                      label: const Text('Pick Location from Map'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: AppTheme.primaryColor),
+                        foregroundColor: AppTheme.primaryColor,
+                      ),
+                    ),
                     const SizedBox(height: 24),
 
                     // Submit button
@@ -407,5 +420,35 @@ class _FormScreenState extends State<FormScreen> {
         ),
       ],
     );
+  }
+  Future<void> _pickLocationFromMap() async {
+    final selectedLocation = await Navigator.push<LatLng>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapPickerScreen(
+          initialLat: _latController.text.isEmpty
+              ? null
+              : double.tryParse(_latController.text),
+          initialLon: _lonController.text.isEmpty
+              ? null
+              : double.tryParse(_lonController.text),
+        ),
+      ),
+    );
+
+    if (selectedLocation != null) {
+      setState(() {
+        _latController.text = selectedLocation.latitude.toStringAsFixed(6);
+        _lonController.text = selectedLocation.longitude.toStringAsFixed(6);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location selected from map'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
