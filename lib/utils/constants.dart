@@ -28,11 +28,5 @@ class AppConstants {
   static const String addSuccess = 'Landmark added successfully!';
   static const String updateSuccess = 'Landmark updated successfully!';
   static const String deleteSuccess = 'Landmark deleted successfully!';
-  // Authentication Messages (NEW)
-  static const String loginSuccess = 'Login successful!';
-  static const String registerSuccess = 'Account created successfully!';
-  static const String logoutSuccess = 'Logged out successfully!';
-  static const String loginError = 'Invalid email or password';
-  static const String registerError = 'Registration failed. Please try again.';
-  static const String authRequired = 'Please login to continue';
+
 }
